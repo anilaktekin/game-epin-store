@@ -1,0 +1,97 @@
+name: 🚀 Deploy GameStore
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # Frontend Test & Build
+  frontend:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+    
+    - name: Install Frontend Dependencies
+      run: |
+        cd frontend
+        npm ci
+    
+    - name: Run Frontend Tests
+      run: |
+        cd frontend
+        npm test -- --coverage --watchAll=false
+    
+    - name: Build Frontend
+      run: |
+        cd frontend
+        npm run build
+    
+    - name: Upload Frontend Build
+      uses: actions/upload-artifact@v3
+      with:
+        name: frontend-build
+        path: frontend/build/
+
+  # Backend Test
+  backend:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Install Backend Dependencies
+      run: |
+        cd backend
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run Django Tests
+      run: |
+        cd backend
+        python manage.py test
+    
+    - name: Check Django Migrations
+      run: |
+        cd backend
+        python manage.py makemigrations --check --dry-run
+
+  # Deploy (sadece main branch'te)
+  deploy:
+    needs: [frontend, backend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Download Frontend Build
+      uses: actions/download-artifact@v3
+      with:
+        name: frontend-build
+        path: frontend/build/
+    
+    - name: 🎉 Deployment Ready
+      run: |
+        echo "🎮 GameStore deployment hazır!"
+        echo "Frontend build: $(ls -la frontend/build/)"
+        echo "Backend: Django uygulama hazır"
+        # Burada gerçek deployment komutları olabilir:
+        # - Vercel/Netlify için frontend
+        # - Heroku/Railway için backend
+        # - Docker build & push
+        # - SSH ile server'a upload 

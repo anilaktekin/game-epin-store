@@ -1,0 +1,14 @@
+Django==4.2.0
+djangorestframework==3.14.0
+django-cors-headers==4.0.0
+#psycopg2-binary==2.9.6
+python-decouple==3.8
+Pillow==9.5.0
+celery==5.2.7
+redis==4.5.5
+django-celery-beat==2.5.0
+iyzipay==1.0.9
+django-allauth==0.54.0
+djangorestframework-simplejwt==5.2.2
+whitenoise==6.4.0
+gunicorn==20.1.0
